@@ -1,7 +1,7 @@
 # Project Statement of Work (SOW)
 
 **Project Title:**
-- Online-TicTacToc
+- Online-TicTacToe
 
 **Team:**
 - Patrick Cook
