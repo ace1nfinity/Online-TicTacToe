@@ -1,13 +1,13 @@
 #Project Statement of Work (SOW)
 
 **Project Title:**
-Online-TicTacToc
+- Online-TicTacToc
 
 **Team:**
-Patrick Cook
+- Patrick Cook
 
 Project Objective:
-The goal of this project is to implement a functioning tic-tac-toe game that can be played by two people on two different machines.
+- The goal of this project is to implement a functioning tic-tac-toe game that can be played by two people on two different machines.
 
 **Scope:**
 Inclusions:
@@ -26,19 +26,21 @@ Timeline:
   - Create the networking to be able to play the project across two different machines. Estimated four weeks of development time.
   - Polish the game and experience for the users. Estimated two weeks of development time.
 **Task Breakdown:**
-- Creating tic-tac-toc game: 14 days
-- Creating networking for game: 28 days
-- Polishing the game and user experience: 14 days
+- Creating tic-tac-toc game: 14 days.
+- Creating networking for game: 28 days.
+- Polishing the game and user experience: 14 days.
 **Technical Requirements:**
 Hardware:
-[Specify any hardware requirements, such as servers, networking equipment, or specific devices.]
+- Two devices that can connect to the internet.
 Software:
-[List the necessary software tools, programming languages (Python), libraries (socket, threading, etc.), and operating systems.]
+- Python as primary coding language.
+- Windows as operating system.
 Assumptions:
-[State any assumptions that are being made about the project, such as network connectivity or availability of resources.]
+- 
 Roles and Responsibilities:
-[Define the roles of team members, including project manager, developers, testers, etc., and their responsibilities.]
+- Patrick Cook is the Sole developer and project manager.
 Communication Plan:
-[Outline the communication channels and frequency for project updates, meetings, and decision-making.]
+- Weekly updates to the project readme.
 Additional Notes:
-[Include any other relevant information or considerations that are specific to your project.]
+- Scope for the tic-tac-toe implementation may increase to bigger versions of tic-tac-toe based on the pace and development of the project.
+
