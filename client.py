@@ -24,9 +24,9 @@ def start_connection(host, port, request):
     sock.connect_ex(addr)
     events = selectors.EVENT_READ | selectors.EVENT_WRITE
     message = TTTclient.Message(sel, sock, addr, request)
-    sel.register(sock, events, data=None)
+    sel.register(sock, events, data=message)
 
-if len(sys.argv) != 5:
+if len(sys.argv) != 3:
     print("usage:", sys.argv[0], "<host> <port>")
     sys.exit(1)
 
@@ -47,7 +47,7 @@ try:
                     "main: error: exception for",
                     f"{message.addr}:\n{traceback.format_exc()}",
                 )
-                message.close()
+                #message.close()
         # Check for a socket being monitored to continue.
         if not sel.get_map():
             break

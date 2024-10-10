@@ -46,7 +46,7 @@ class Message:
 
     def _write(self):
         if self._send_buffer:
-            print("sending", repr(self._send_buffer), "to", self.addr)
+            #print("sending", repr(self._send_buffer), "to", self.addr)
             try:
                 # Should be ready to write
                 sent = self.sock.send(self._send_buffer)
@@ -192,18 +192,12 @@ class Message:
             return
         data = self._recv_buffer[:content_len]
         self._recv_buffer = self._recv_buffer[content_len:]
-        if self.jsonheader["content-type"] == "text/json":
-            encoding = self.jsonheader["content-encoding"]
-            self.response = self._json_decode(data, encoding)
-            print("received response", repr(self.response), "from", self.addr)
-            self._process_response_json_content()
-        else:
-            # Binary or unknown content-type
-            self.response = data
-            print(
-                f'received {self.jsonheader["content-type"]} response from',
-                self.addr,
-            )
-            self._process_response_binary_content()
+        # Binary or unknown content-type
+        self.response = data
+        print(
+            f'received response from',
+            self.addr,
+        )
+        self._process_response_binary_content()
         # Close when response has been processed
-        self.close()
+        #self.close()
