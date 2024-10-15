@@ -83,7 +83,7 @@ class Message:
 
     def _process_response_json_content(self):
         content = self.response
-        result = content.get("result")
+        result = content
         print(f"got result: {result}")
 
     def _process_response_binary_content(self):
@@ -192,12 +192,10 @@ class Message:
             return
         data = self._recv_buffer[:content_len]
         self._recv_buffer = self._recv_buffer[content_len:]
-        # Binary or unknown content-type
-        self.response = data
-        print(
-            f'received response from',
-            self.addr,
-        )
-        self._process_response_binary_content()
+        if self.jsonheader["content-type"] == "text/json":
+            encoding = self.jsonheader["content-encoding"]
+            self.response = self._json_decode(data, encoding)
+            print("received response", repr(self.response), "from", self.addr)
+            self._process_response_json_content()
         # Close when response has been processed
         #self.close()

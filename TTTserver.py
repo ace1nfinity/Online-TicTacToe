@@ -83,10 +83,22 @@ class Message:
         return message
 
     def _create_response(self):
-        response = {
-            "content_bytes": b"Welcome to Ultimate Tic Tac Toe!",
-            "content_type": "binary/custom-server-binary-type",
-            "content_encoding": "binary",
+        action = self.request.get("action")
+        if action == "Connect":
+            content = "Welcome to Ultimate Tic-Tac-Toe!"
+            content_encoding = "utf-8"
+            response = {
+            "content_bytes": self._json_encode(content, content_encoding),
+            "content_type": "text/json",
+            "content_encoding": content_encoding,
+        }
+        else:
+            content = {"result": f'Error: invalid action "{action}".'}
+            content_encoding = "utf-8"
+            response = {
+            "content_bytes": self._json_encode(content, content_encoding),
+            "content_type": "text/json",
+            "content_encoding": content_encoding,
         }
         return response
 
@@ -168,13 +180,10 @@ class Message:
             return
         data = self._recv_buffer[:content_len]
         self._recv_buffer = self._recv_buffer[content_len:]
-
-         # Binary or unknown content-type
-        self.request = data
-        print(
-            f'received request from',
-            self.addr,
-        )
+        if self.jsonheader["content-type"] == "text/json":
+            encoding = self.jsonheader["content-encoding"]
+            self.request = self._json_decode(data, encoding)
+            print("received request", repr(self.request), "from", self.addr)
         # Set selector to listen for write events, we're done reading.
         self._set_selector_events_mask("w")
 

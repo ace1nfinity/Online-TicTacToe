@@ -8,12 +8,11 @@ import TTTclient
 
 sel = selectors.DefaultSelector()
 
-def create_request(action, value):
-    packedData = struct.pack('>6si', action.encode(), int(value))
+def create_request(action):
     return dict(
-        type="binary/custom-client-binary-type",
-        encoding="binary",
-        content=packedData
+        type="text/json",
+        encoding="utf-8",
+        content=dict(action=action),
     )
 
 def start_connection(host, port, request):
@@ -31,8 +30,8 @@ if len(sys.argv) != 3:
     sys.exit(1)
 
 host, port = sys.argv[1], int(sys.argv[2])
-action, value = "test", 20
-request = create_request(action, value)
+action = "Connect"
+request = create_request(action)
 start_connection(host, port, request)
 
 try:

@@ -6,6 +6,7 @@ import traceback
 import TTTserver
 
 sel = selectors.DefaultSelector()
+counter = 0
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
