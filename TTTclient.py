@@ -84,11 +84,11 @@ class Message:
     def _process_response_json_content(self):
         content = self.response
         result = content
-        print(f"got result: {result}")
+        print(f"{result}")
 
     def _process_response_binary_content(self):
         content = self.response
-        print(f"got response: {repr(content)}")
+        print(f"{repr(content)}")
 
     def process_events(self, mask):
         if mask & selectors.EVENT_READ:
@@ -195,7 +195,7 @@ class Message:
         if self.jsonheader["content-type"] == "text/json":
             encoding = self.jsonheader["content-encoding"]
             self.response = self._json_decode(data, encoding)
-            print("received response", repr(self.response), "from", self.addr)
+            #print("received response", repr(self.response), "from", self.addr)
             self._process_response_json_content()
         # Close when response has been processed
         #self.close()

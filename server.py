@@ -6,14 +6,24 @@ import traceback
 import TTTserver
 
 sel = selectors.DefaultSelector()
+global counter
 counter = 0
+
+global clients
+clients = []
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
     print("accepted connection from", addr)
+    global counter
+    counter = counter+1
+    print(counter)
     conn.setblocking(False)
-    message = TTTserver.Message(sel, conn, addr)
+    message = TTTserver.Message(sel, conn, addr, counter)
     sel.register(conn, selectors.EVENT_READ, data=message)
+    global clients
+    clients = sel.get_map()
+    print(clients.__getitem__(0))
 
 if len(sys.argv) != 3:
     print("usage:", sys.argv[0], "<host> <port>")

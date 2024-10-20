@@ -6,7 +6,10 @@ import io
 import struct
 
 class Message:
-    def __init__(self, selector, sock, addr):
+
+    global clientCounter
+
+    def __init__(self, selector, sock, addr, counter):
         self.selector = selector
         self.sock = sock
         self.addr = addr
@@ -16,6 +19,8 @@ class Message:
         self.jsonheader = None
         self.request = None
         self.response_created = False
+        global clientCounter
+        clientCounter = counter
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -85,7 +90,13 @@ class Message:
     def _create_response(self):
         action = self.request.get("action")
         if action == "Connect":
-            content = "Welcome to Ultimate Tic-Tac-Toe!"
+            content = "Welcome!"
+            if clientCounter < 2:
+                content = "Welcome to Ultimate Tic-Tac-Toe! \nWaiting for Player 2 to connect..."
+            elif clientCounter == 2:
+                content = "Welcome to Ultimate Tic-Tac-Toe! \nIt is Player 1's Turn, waiting for there move..."
+            else:
+                content = "Game is full."
             content_encoding = "utf-8"
             response = {
             "content_bytes": self._json_encode(content, content_encoding),

@@ -10,6 +10,12 @@ This is a simple online game implementing the rules of Tic Tac Toe.
 * Python
 * Sockets
 
+**Message Protocol:** <Protocol> <Protocol Specific Data if needed>
+* <Connect>
+* <Quit>
+* <Spectate>
+* <Move> <Where on board to play move>
+
 **Additional resources:**
 * [Link to Python documentation]
 * [Link to sockets tutorial]
