@@ -17,6 +17,7 @@ class Message:
         self.jsonheader = None
         self.request = None
         self.ID = ID
+        self.action = None
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -84,26 +85,48 @@ class Message:
         message = message_hdr + jsonheader_bytes + content_bytes
         return message
 
-    def _create_response(self, message = ""):
-        action = self.request.get("action")
-        if action == "Connect":
-            content = "---"
-            if(message != ""):
-                content = message
+    def _create_response(self, server_action, message = ""):
+        self.action = self.request.get("action")
+
+        if self.action == "Connect":
+            server_action = "Waiting"
+
+            if server_action == "Name":
+                server_action = "Name"
+                message = "Welcome to Tic-Tac-Toe!"
+
             elif(self.ID == 1):
-                content = "Welcome! Waiting for second Player to Connect..."
+                message = "Welcome! Waiting for second Player to Connect..."
+            
+            
+        elif self.action=="Move":
+
+            if(server_action == "End"):
+                content = dict(action=server_action, message=message)
+                content_encoding = "utf-8"
+                response = {
+                "content_bytes": self._json_encode(content, content_encoding),
+                "content_type": "text/json",
+                "content_encoding": content_encoding,
+                }
+                return response
+
+            server_action = "Waiting"
+
+            if(message != ""):
+                server_action = "Your_Turn"
+                message = message
+            elif(self.ID == 1):
+                message = "Player 2's Turn. Waiting..."
             else:
-                content = "Welcome to Tic-Tac-Toe! It is Player 1's turn, waiting for their move..."
-            content_encoding = "utf-8"
-            response = {
-            "content_bytes": self._json_encode(content, content_encoding),
-            "content_type": "text/json",
-            "content_encoding": content_encoding,
-        }
+                message = "Player 1's Turn. Waiting..."
+
         else:
-            content = {"result": f'Error: invalid action "{action}".'}
-            content_encoding = "utf-8"
-            response = {
+            content = {"result": f'Error: invalid action "{self.action}".'}
+
+        content = dict(action=server_action, message=message)
+        content_encoding = "utf-8"
+        response = {
             "content_bytes": self._json_encode(content, content_encoding),
             "content_type": "text/json",
             "content_encoding": content_encoding,
@@ -112,18 +135,17 @@ class Message:
 
     def process_events(self, mask):
         if mask & selectors.EVENT_READ:
-            self._recv_buffer = b""
-            self._jsonheader_len = None
-            self.jsonheader = None
-            self.response = None
-            print("Read")
             self.read()
         if mask & selectors.EVENT_WRITE:
-            self._send_buffer = b""
-            print("Write")
-            self.write()
+            self.write("")
 
     def read(self):
+        self.request = None
+        self._recv_buffer = b""
+        self._jsonheader_len = None
+        self.jsonheader = None
+        self.response = None
+
         self._read()
 
         if self._jsonheader_len is None:
@@ -137,8 +159,9 @@ class Message:
             if self.request is None:
                 self.process_request()
 
-    def write(self, message = ""):
-        self.create_response(message)
+    def write(self, action, message = ""):
+        self._send_buffer = b""
+        self.create_response(action, message)
         self._write()
 
     def close(self):
@@ -199,7 +222,7 @@ class Message:
         # Set selector to listen for write events, we're done reading.
         self._set_selector_events_mask("w")
 
-    def create_response(self, message):
-        response = self._create_response(message)
+    def create_response(self, action, message):
+        response = self._create_response(action, message)
         message = self._create_message(**response)
         self._send_buffer += message

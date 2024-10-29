@@ -18,6 +18,8 @@ clients = []
 
 playersConnected = False
 
+numOfTurns = 0
+
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
     print("accepted connection from", addr)
@@ -31,9 +33,6 @@ def accept_wrapper(sock):
     sel.register(conn, selectors.EVENT_READ, data=message)
 
 
-    #print(player.Connection)
-
-
 def service_connection(key, mask):
 
     message = key.data
@@ -41,15 +40,38 @@ def service_connection(key, mask):
     #If not all players connected yet
     global playersConnected
     if(not playersConnected):
+        print("not all players")
         message.process_events(mask)
 
         if(len(clients) == 2):
             playersConnected = True
-            clients[0].Message.write("Player 2 has connected! It is your turn. Please enter your move: ")
+            clients[0].Message.write("Name", "")
+            clients[1].Message.write("Name", "")
 
         return
     
+    #If a move has been made, inform other client
     message.process_events(mask)
+    global numOfTurns
+    if(message.action=="Move"):
+        numOfTurns += 1
+
+        if(numOfTurns >= 2):
+            for c in clients:
+                c.Message.write("End", "End of Game, Goodbye.")
+                c.Message.close()
+                #sel.unregister(c.Message.sock)
+            sel.close()
+            exit()
+
+        #If player 1 made a move
+        if(message.ID == 1):
+            print("Test1")
+            clients[1].Message.write("Your_Turn", "Player 2, It is your Turn.")
+        #If player 2 made a move
+        else:
+            print("Test2")
+            clients[0].Message.write("Your_Turn", "Player 1, It is your Turn.")
 
     return
 

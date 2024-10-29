@@ -18,6 +18,7 @@ class Message:
         self._jsonheader_len = None
         self.jsonheader = None
         self.response = None
+        self.action = None
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -82,7 +83,8 @@ class Message:
         return message
 
     def _process_response_json_content(self):
-        content = self.response
+        self.action = self.response.get("action")
+        content = self.response.get("message")
         result = content
         print(f"{result}")
 
@@ -92,18 +94,17 @@ class Message:
 
     def process_events(self, mask):
         if mask & selectors.EVENT_READ:
-            self._recv_buffer = b""
-            self._jsonheader_len = None
-            self.jsonheader = None
-            self.response = None
-            print("Read")
             self.read()
         if mask & selectors.EVENT_WRITE:
-            self._send_buffer = b""
-            print("Write")
             self.write()
 
     def read(self):
+        self.request = None
+        self._recv_buffer = b""
+        self._jsonheader_len = None
+        self.jsonheader = None
+        self.response = None
+
         self._read()
         if self._jsonheader_len is None:
             self.process_protoheader()
@@ -117,6 +118,8 @@ class Message:
                 self.process_response()
 
     def write(self):
+        self._send_buffer = b""
+        self._request_queued = False
         if not self._request_queued:
             self.queue_request()
 

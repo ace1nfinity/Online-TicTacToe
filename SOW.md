@@ -22,8 +22,8 @@ Inclusions:
 - Up to date documentation on the version and development of the project.
 **Timeline:**
 - **Key Milestones:**
-  - Create a rough working version of tic-tac-toe. Estimated two weeks of development time.
   - Create the networking to be able to play the project across two different machines. Estimated four weeks of development time.
+  - Create a rough working version of tic-tac-toe. Estimated two weeks of development time.
   - Polish the game and experience for the users. Estimated two weeks of development time.
 - **Task Breakdown:**
   - Creating tic-tac-toc game: 14 days.
