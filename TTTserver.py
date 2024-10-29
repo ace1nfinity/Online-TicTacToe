@@ -18,6 +18,7 @@ class Message:
         self.request = None
         self.ID = ID
         self.action = None
+        self.last_data = None
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -46,7 +47,6 @@ class Message:
 
     def _write(self):
         if self._send_buffer:
-            print("sending", repr(self._send_buffer), "to", self.addr)
             try:
                 # Should be ready to write
                 sent = self.sock.send(self._send_buffer)
@@ -87,20 +87,23 @@ class Message:
 
     def _create_response(self, server_action, message = ""):
         self.action = self.request.get("action")
-
+        self.last_data = self.request.get("move")
         if self.action == "Connect":
-            server_action = "Waiting"
 
             if server_action == "Name":
                 server_action = "Name"
                 message = "Welcome to Tic-Tac-Toe!"
 
-            elif(self.ID == 1):
+            elif self.ID == 1:
+                server_action = "Waiting"
                 message = "Welcome! Waiting for second Player to Connect..."
-            
-            
-        elif self.action=="Move":
 
+        elif self.action == "Name" and server_action!="Move":
+            server_action = "Waiting"
+            message = "Waiting for other Player..."
+
+        
+        elif self.action=="Move" or server_action=="Move":
             if(server_action == "End"):
                 content = dict(action=server_action, message=message)
                 content_encoding = "utf-8"
@@ -111,18 +114,18 @@ class Message:
                 }
                 return response
 
-            server_action = "Waiting"
-
             if(message != ""):
                 server_action = "Your_Turn"
                 message = message
-            elif(self.ID == 1):
-                message = "Player 2's Turn. Waiting..."
             else:
-                message = "Player 1's Turn. Waiting..."
+                server_action = "Waiting"
+                message = "Other Player's Turn. Waiting..."
 
         else:
             content = {"result": f'Error: invalid action "{self.action}".'}
+
+        with open("server_log.txt", "a") as f:
+                print(f"sending: Action '{server_action}', Message '{message}' to ", self.addr, file=f)
 
         content = dict(action=server_action, message=message)
         content_encoding = "utf-8"
@@ -165,13 +168,15 @@ class Message:
         self._write()
 
     def close(self):
-        print("closing connection to", self.addr)
+        with open("server_log.txt", "a") as f:
+            print("closing connection to", self.addr, file=f)
         try:
             self.selector.unregister(self.sock)
         except Exception as e:
-            print(
+            with open("server_log.txt", "a") as f:
+                print(
                 f"error: selector.unregister() exception for",
-                f"{self.addr}: {repr(e)}",
+                f"{self.addr}: {repr(e)}", file=f,
             )
 
         try:
@@ -218,7 +223,8 @@ class Message:
         if self.jsonheader["content-type"] == "text/json":
             encoding = self.jsonheader["content-encoding"]
             self.request = self._json_decode(data, encoding)
-            print("received request", repr(self.request), "from", self.addr)
+            with open("server_log.txt", "a") as f:
+                print("received request", repr(self.request), "from", self.addr, file=f)
         # Set selector to listen for write events, we're done reading.
         self._set_selector_events_mask("w")
 

@@ -42,8 +42,13 @@ def process_connection(key, mask):
          request = create_request("Move", move)
          message.request = request
          message.write()
+         
+    elif(action == "Name"):
+         name = input("Enter a Username:\n")
+         request = create_request("Name", name)
+         message.request = request
+         message.write()
 
-         return
     elif(action == "End"):
          message.close()
          exit()
