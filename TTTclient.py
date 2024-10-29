@@ -92,13 +92,19 @@ class Message:
 
     def process_events(self, mask):
         if mask & selectors.EVENT_READ:
+            self._recv_buffer = b""
+            self._jsonheader_len = None
+            self.jsonheader = None
+            self.response = None
+            print("Read")
             self.read()
         if mask & selectors.EVENT_WRITE:
+            self._send_buffer = b""
+            print("Write")
             self.write()
 
     def read(self):
         self._read()
-
         if self._jsonheader_len is None:
             self.process_protoheader()
 
@@ -195,7 +201,7 @@ class Message:
         if self.jsonheader["content-type"] == "text/json":
             encoding = self.jsonheader["content-encoding"]
             self.response = self._json_decode(data, encoding)
-            #print("received response", repr(self.response), "from", self.addr)
+            print("received response", repr(self.response), "from", self.addr)
             self._process_response_json_content()
         # Close when response has been processed
         #self.close()

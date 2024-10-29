@@ -2,28 +2,57 @@ import sys
 import socket
 import selectors
 import traceback
+from typing import NamedTuple
 
 import TTTserver
 
-sel = selectors.DefaultSelector()
-global counter
-counter = 0
+class PlayerData(NamedTuple):
+    ID: int
+    Name: str
+    Address: str
+    Message: TTTserver.Message
 
-global clients
+sel = selectors.DefaultSelector()
+
 clients = []
+
+playersConnected = False
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
     print("accepted connection from", addr)
-    global counter
-    counter = counter+1
-    print(counter)
     conn.setblocking(False)
-    message = TTTserver.Message(sel, conn, addr, counter)
+
+    message = TTTserver.Message(sel, conn, addr, (len(clients)+1))
+
+    player = PlayerData((len(clients)+1), "Test", addr, message)
+    clients.append(player)
+
     sel.register(conn, selectors.EVENT_READ, data=message)
-    global clients
-    clients = sel.get_map()
-    print(clients.__getitem__(0))
+
+
+    #print(player.Connection)
+
+
+def service_connection(key, mask):
+
+    message = key.data
+
+    #If not all players connected yet
+    global playersConnected
+    if(not playersConnected):
+        message.process_events(mask)
+
+        if(len(clients) == 2):
+            playersConnected = True
+            clients[0].Message.write("Player 2 has connected! It is your turn. Please enter your move: ")
+
+        return
+    
+    message.process_events(mask)
+
+    return
+
 
 if len(sys.argv) != 3:
     print("usage:", sys.argv[0], "<host> <port>")
@@ -40,23 +69,22 @@ print("listening on", (host, port))
 lsock.setblocking(False)
 sel.register(lsock, selectors.EVENT_READ, data=None)
 
-try:
-    while True:
-        events = sel.select(timeout=None)
-        for key, mask in events:
-            if key.data is None:
-                accept_wrapper(key.fileobj)
-            else:
-                message = key.data
-                try:
-                    message.process_events(mask)
-                except Exception:
-                    print(
-                        "main: error: exception for",
-                        f"{message.addr}:\n{traceback.format_exc()}",
-                    )
-                    message.close()
-except KeyboardInterrupt:
-    print("caught keyboard interrupt, exiting")
-finally:
-    sel.close()
+while True:
+    events = sel.select(timeout=None)
+    for key, mask in events:
+        if key.data is None:
+            accept_wrapper(key.fileobj)
+        else:
+            service_connection(key, mask)
+                #try:
+                    #message.process_events(mask)
+                #except Exception:
+                    #print(
+                        #"main: error: exception for",
+                        #f"{message.addr}:\n{traceback.format_exc()}",
+                    #)
+                    #message.close()
+#except KeyboardInterrupt:
+    #print("caught keyboard interrupt, exiting")
+#finally:
+    #sel.close()

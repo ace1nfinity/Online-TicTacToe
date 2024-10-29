@@ -7,9 +7,7 @@ import struct
 
 class Message:
 
-    global clientCounter
-
-    def __init__(self, selector, sock, addr, counter):
+    def __init__(self, selector, sock, addr, ID):
         self.selector = selector
         self.sock = sock
         self.addr = addr
@@ -18,9 +16,7 @@ class Message:
         self._jsonheader_len = None
         self.jsonheader = None
         self.request = None
-        self.response_created = False
-        global clientCounter
-        clientCounter = counter
+        self.ID = ID
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -49,10 +45,11 @@ class Message:
 
     def _write(self):
         if self._send_buffer:
-            #print("sending", repr(self._send_buffer), "to", self.addr)
+            print("sending", repr(self._send_buffer), "to", self.addr)
             try:
                 # Should be ready to write
                 sent = self.sock.send(self._send_buffer)
+                self._set_selector_events_mask("r")
             except BlockingIOError:
                 # Resource temporarily unavailable (errno EWOULDBLOCK)
                 pass
@@ -87,16 +84,16 @@ class Message:
         message = message_hdr + jsonheader_bytes + content_bytes
         return message
 
-    def _create_response(self):
+    def _create_response(self, message = ""):
         action = self.request.get("action")
         if action == "Connect":
-            content = "Welcome!"
-            if clientCounter < 2:
-                content = "Welcome to Ultimate Tic-Tac-Toe! \nWaiting for Player 2 to connect..."
-            elif clientCounter == 2:
-                content = "Welcome to Ultimate Tic-Tac-Toe! \nIt is Player 1's Turn, waiting for there move..."
+            content = "---"
+            if(message != ""):
+                content = message
+            elif(self.ID == 1):
+                content = "Welcome! Waiting for second Player to Connect..."
             else:
-                content = "Game is full."
+                content = "Welcome to Tic-Tac-Toe! It is Player 1's turn, waiting for their move..."
             content_encoding = "utf-8"
             response = {
             "content_bytes": self._json_encode(content, content_encoding),
@@ -115,8 +112,15 @@ class Message:
 
     def process_events(self, mask):
         if mask & selectors.EVENT_READ:
+            self._recv_buffer = b""
+            self._jsonheader_len = None
+            self.jsonheader = None
+            self.response = None
+            print("Read")
             self.read()
         if mask & selectors.EVENT_WRITE:
+            self._send_buffer = b""
+            print("Write")
             self.write()
 
     def read(self):
@@ -133,11 +137,8 @@ class Message:
             if self.request is None:
                 self.process_request()
 
-    def write(self):
-        if self.request:
-            if not self.response_created:
-                self.create_response()
-
+    def write(self, message = ""):
+        self.create_response(message)
         self._write()
 
     def close(self):
@@ -198,8 +199,7 @@ class Message:
         # Set selector to listen for write events, we're done reading.
         self._set_selector_events_mask("w")
 
-    def create_response(self):
-        response = self._create_response()
+    def create_response(self, message):
+        response = self._create_response(message)
         message = self._create_message(**response)
-        self.response_created = True
         self._send_buffer += message
