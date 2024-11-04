@@ -17,6 +17,8 @@ class Message:
         self.jsonheader = None
         self.request = None
         self.ID = ID
+        self.action = None
+        self.last_data = None
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -45,7 +47,6 @@ class Message:
 
     def _write(self):
         if self._send_buffer:
-            print("sending", repr(self._send_buffer), "to", self.addr)
             try:
                 # Should be ready to write
                 sent = self.sock.send(self._send_buffer)
@@ -84,26 +85,51 @@ class Message:
         message = message_hdr + jsonheader_bytes + content_bytes
         return message
 
-    def _create_response(self, message = ""):
-        action = self.request.get("action")
-        if action == "Connect":
-            content = "---"
+    def _create_response(self, server_action, message = ""):
+        self.action = self.request.get("action")
+        self.last_data = self.request.get("move")
+        if self.action == "Connect":
+
+            if server_action == "Name":
+                server_action = "Name"
+                message = "Welcome to Tic-Tac-Toe!"
+
+            elif self.ID == 1:
+                server_action = "Waiting"
+                message = "Welcome! Waiting for second Player to Connect..."
+
+        elif self.action == "Name" and server_action!="Move":
+            server_action = "Waiting"
+            message = "Waiting for other Player..."
+
+        
+        elif self.action=="Move" or server_action=="Move":
+            if(server_action == "End"):
+                content = dict(action=server_action, message=message)
+                content_encoding = "utf-8"
+                response = {
+                "content_bytes": self._json_encode(content, content_encoding),
+                "content_type": "text/json",
+                "content_encoding": content_encoding,
+                }
+                return response
+
             if(message != ""):
-                content = message
-            elif(self.ID == 1):
-                content = "Welcome! Waiting for second Player to Connect..."
+                server_action = "Your_Turn"
+                message = message
             else:
-                content = "Welcome to Tic-Tac-Toe! It is Player 1's turn, waiting for their move..."
-            content_encoding = "utf-8"
-            response = {
-            "content_bytes": self._json_encode(content, content_encoding),
-            "content_type": "text/json",
-            "content_encoding": content_encoding,
-        }
+                server_action = "Waiting"
+                message = "Other Player's Turn. Waiting..."
+
         else:
-            content = {"result": f'Error: invalid action "{action}".'}
-            content_encoding = "utf-8"
-            response = {
+            content = {"result": f'Error: invalid action "{self.action}".'}
+
+        with open("server_log.txt", "a") as f:
+                print(f"sending: Action '{server_action}', Message '{message}' to ", self.addr, file=f)
+
+        content = dict(action=server_action, message=message)
+        content_encoding = "utf-8"
+        response = {
             "content_bytes": self._json_encode(content, content_encoding),
             "content_type": "text/json",
             "content_encoding": content_encoding,
@@ -112,18 +138,17 @@ class Message:
 
     def process_events(self, mask):
         if mask & selectors.EVENT_READ:
-            self._recv_buffer = b""
-            self._jsonheader_len = None
-            self.jsonheader = None
-            self.response = None
-            print("Read")
             self.read()
         if mask & selectors.EVENT_WRITE:
-            self._send_buffer = b""
-            print("Write")
-            self.write()
+            self.write("")
 
     def read(self):
+        self.request = None
+        self._recv_buffer = b""
+        self._jsonheader_len = None
+        self.jsonheader = None
+        self.response = None
+
         self._read()
 
         if self._jsonheader_len is None:
@@ -137,18 +162,21 @@ class Message:
             if self.request is None:
                 self.process_request()
 
-    def write(self, message = ""):
-        self.create_response(message)
+    def write(self, action, message = ""):
+        self._send_buffer = b""
+        self.create_response(action, message)
         self._write()
 
     def close(self):
-        print("closing connection to", self.addr)
+        with open("server_log.txt", "a") as f:
+            print("closing connection to", self.addr, file=f)
         try:
             self.selector.unregister(self.sock)
         except Exception as e:
-            print(
+            with open("server_log.txt", "a") as f:
+                print(
                 f"error: selector.unregister() exception for",
-                f"{self.addr}: {repr(e)}",
+                f"{self.addr}: {repr(e)}", file=f,
             )
 
         try:
@@ -195,11 +223,12 @@ class Message:
         if self.jsonheader["content-type"] == "text/json":
             encoding = self.jsonheader["content-encoding"]
             self.request = self._json_decode(data, encoding)
-            print("received request", repr(self.request), "from", self.addr)
+            with open("server_log.txt", "a") as f:
+                print("received request", repr(self.request), "from", self.addr, file=f)
         # Set selector to listen for write events, we're done reading.
         self._set_selector_events_mask("w")
 
-    def create_response(self, message):
-        response = self._create_response(message)
+    def create_response(self, action, message):
+        response = self._create_response(action, message)
         message = self._create_message(**response)
         self._send_buffer += message

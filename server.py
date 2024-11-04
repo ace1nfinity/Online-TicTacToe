@@ -17,21 +17,23 @@ sel = selectors.DefaultSelector()
 clients = []
 
 playersConnected = False
+namesCollected = False
+
+currentPlayerTurn = 0
+numOfTurns = 0
 
 def accept_wrapper(sock):
     conn, addr = sock.accept()  # Should be ready to read
-    print("accepted connection from", addr)
+    with open("server_log.txt", "a") as f:
+        print("accepted connection from", addr, file=f)
     conn.setblocking(False)
 
     message = TTTserver.Message(sel, conn, addr, (len(clients)+1))
 
-    player = PlayerData((len(clients)+1), "Test", addr, message)
+    player = PlayerData((len(clients)+1), "_name_", addr, message)
     clients.append(player)
 
     sel.register(conn, selectors.EVENT_READ, data=message)
-
-
-    #print(player.Connection)
 
 
 def service_connection(key, mask):
@@ -45,11 +47,48 @@ def service_connection(key, mask):
 
         if(len(clients) == 2):
             playersConnected = True
-            clients[0].Message.write("Player 2 has connected! It is your turn. Please enter your move: ")
+            clients[0].Message.write("Name", "")
+            clients[1].Message.write("Name", "")
 
         return
     
+    #If a move has been made, inform other client
     message.process_events(mask)
+    global namesCollected
+    global currentPlayerTurn
+    global numOfTurns
+    if(message.action=="Move"):
+
+        numOfTurns += 1
+
+        if(numOfTurns >= 4):
+            for c in clients:
+                c.Message.write("End", "End of Game, Goodbye.")
+                c.Message.close()
+                #sel.unregister(c.Message.sock)
+            sel.close()
+            exit()
+        else:
+            #If player 1 made a move
+            if(currentPlayerTurn == 1 and message.ID == 1):
+                currentPlayerTurn = 2
+                clients[1].Message.write("Move", f"{clients[1].Name}, It is your Turn.")
+            #If player 2 made a move
+            elif((currentPlayerTurn == 2 and message.ID == 2)):
+                currentPlayerTurn = 1
+                clients[0].Message.write("Move", f"{clients[0].Name}, It is your Turn.")
+
+    elif(message.action=="Name"):
+        if(message.ID == 1):
+            clients[0] = clients[0]._replace(Name = message.last_data)
+        else:
+            clients[1] = clients[1]._replace(Name = message.last_data)
+
+        if (clients[0].Name != "_name_" and clients[1].Name != "_name_" and namesCollected == False):
+            namesCollected = True
+            currentPlayerTurn = 1
+            clients[0].Message.write("Move", (f"{clients[0].Name}, It is your Turn."))
+            clients[1].Message.write("Move", "")
 
     return
 
@@ -57,7 +96,9 @@ def service_connection(key, mask):
 if len(sys.argv) != 3:
     print("usage:", sys.argv[0], "<host> <port>")
     sys.exit(1)
-    
+
+f = open('server_log.txt', 'r+')
+f.truncate(0)
 
 host, port = sys.argv[1], int(sys.argv[2])
 lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -65,7 +106,8 @@ lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 lsock.bind((host, port))
 lsock.listen()
-print("listening on", (host, port))
+with open("server_log.txt", "a") as f:
+    print("listening on", (host, port), file=f)
 lsock.setblocking(False)
 sel.register(lsock, selectors.EVENT_READ, data=None)
 
