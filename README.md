@@ -14,8 +14,8 @@ This is a simple online game implementing the rules of Tic Tac Toe.
 * `README.md` this file.
 
 **How to play:**
-1. **Start the server:** Run the `server.py` script.
-2. **Connect clients:** Run the `client.py` script on two different machines or terminals.
+1. **Start the server:** Run the `server.py` script. It takes one argument: `Port`
+2. **Connect clients:** Run the `client.py` script on two different machines or terminals. It takes two arguments: `IP Address` `Port`
 3. **Enter User-Name:** Enter a user-name to use in game.
 4. **Play the game:** Players take turns one at a time playing their moves. The first player to get three in a row wins.
 
@@ -43,6 +43,7 @@ This is a simple online game implementing the rules of Tic Tac Toe.
 * October 15th: Switched to json for messaging format between server & clients
 * October 20th: Implemented partial message protocol
 * October 28th-29th: Created Sprint 3 branch. Implemented Game State and Synchronized it across clients. Also implemented user-name capabilities, allowing players to choose a user-name at the start of the game.
+* November 12th: Created Sprint 4 branch. Added actual Tic-Tac-Toe implementation. Players can now make actual moves and see those moves reflected on the game board. Added win conditions, so the game now properly ends when win condtion is met. Still need to add: letting players remake moves if they enter a bad move, print board after player makes their move. Not only show updated board when opponent make moves. Add spectator implementation. Add server console logging, not just .txt file logging.
 
 **Additional resources:**
 * [Link to Python documentation]

@@ -33,10 +33,10 @@ def process_connection(key, mask):
 
     action = message.action
 
-    print("State: ", action)
+    #print("State: ", action)
 
     if(action == "Your_Turn"):
-         print(updated_board())
+         print(updated_board(message.board))
          move = input("Enter Move:\n")
 
          request = create_request("Move", move)
@@ -56,8 +56,10 @@ def process_connection(key, mask):
 
     return
 
-def updated_board():
-     board = "==============\nBoard Place-holder\n=============="
+def updated_board(array):
+     if(len(array) < 1):
+          array = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ']
+     board = f"\n    1   2   3\n  +-----------+\nA | {array[0]} | {array[1]} | {array[2]} |\n  +-----------+\nB | {array[3]} | {array[4]} | {array[5]} |\n  +-----------+\nC | {array[6]} | {array[7]} | {array[8]} |\n  +-----------+\n"
      return board
 
 if len(sys.argv) != 3:

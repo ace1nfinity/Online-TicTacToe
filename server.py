@@ -2,9 +2,11 @@ import sys
 import socket
 import selectors
 import traceback
+import ipaddress
 from typing import NamedTuple
 
 import TTTserver
+import GameManager
 
 class PlayerData(NamedTuple):
     ID: int
@@ -13,6 +15,8 @@ class PlayerData(NamedTuple):
     Message: TTTserver.Message
 
 sel = selectors.DefaultSelector()
+
+gameManager = GameManager.GameManager()
 
 clients = []
 
@@ -28,7 +32,7 @@ def accept_wrapper(sock):
         print("accepted connection from", addr, file=f)
     conn.setblocking(False)
 
-    message = TTTserver.Message(sel, conn, addr, (len(clients)+1))
+    message = TTTserver.Message(sel, conn, addr, (len(clients)+1), gameManager)
 
     player = PlayerData((len(clients)+1), "_name_", addr, message)
     clients.append(player)
@@ -59,52 +63,70 @@ def service_connection(key, mask):
     global numOfTurns
     if(message.action=="Move"):
 
-        numOfTurns += 1
-
-        if(numOfTurns >= 4):
-            for c in clients:
-                c.Message.write("End", "End of Game, Goodbye.")
-                c.Message.close()
-                #sel.unregister(c.Message.sock)
-            sel.close()
+        global gameManager
+        #Attempt to place received move, if a bad move let current player re-attempt move
+        if(gameManager.PlaceMove(message.last_data, message.ID) == False and currentPlayerTurn == message.ID):
+            with open("server_log.txt", "a") as f:
+                print("Error in received move", file=f)
             exit()
         else:
+            #Check for Win before allowing another move to be made
+            if(gameManager.CheckForWin()):
+                EndGame(message)
             #If player 1 made a move
             if(currentPlayerTurn == 1 and message.ID == 1):
                 currentPlayerTurn = 2
-                clients[1].Message.write("Move", f"{clients[1].Name}, It is your Turn.")
+                clients[1].Message.write("Move", f"{clients[1].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1")
             #If player 2 made a move
             elif((currentPlayerTurn == 2 and message.ID == 2)):
                 currentPlayerTurn = 1
-                clients[0].Message.write("Move", f"{clients[0].Name}, It is your Turn.")
+                clients[0].Message.write("Move", f"{clients[0].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1")
+            
 
     elif(message.action=="Name"):
-        if(message.ID == 1):
+        if(message.ID == 1 and namesCollected == False):
             clients[0] = clients[0]._replace(Name = message.last_data)
-        else:
+        elif(message.ID == 2 and namesCollected == False):
             clients[1] = clients[1]._replace(Name = message.last_data)
 
         if (clients[0].Name != "_name_" and clients[1].Name != "_name_" and namesCollected == False):
             namesCollected = True
             currentPlayerTurn = 1
-            clients[0].Message.write("Move", (f"{clients[0].Name}, It is your Turn."))
+            clients[0].Message.write("Move", (f"{clients[0].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1"))
             clients[1].Message.write("Move", "")
 
     return
 
+def EndGame(winningPlayer):
+    output = "End of Game, Goodbye."
 
-if len(sys.argv) != 3:
-    print("usage:", sys.argv[0], "<host> <port>")
+    if(winningPlayer.ID == 1 and currentPlayerTurn == 1):
+        output = f"{clients[0].Name} won!. Come play again! Goodbye."
+    else:
+        output = f"{clients[1].Name} won!. Come play again! Goodbye."
+
+    for c in clients:
+        c.Message.write("End", output)
+        c.Message.close()
+        #sel.unregister(c.Message.sock)
+    sel.close()
+    exit()
+    return
+
+
+if len(sys.argv) != 2:
+    print("usage:", sys.argv[0], "<port>")
     sys.exit(1)
 
 f = open('server_log.txt', 'r+')
 f.truncate(0)
 
-host, port = sys.argv[1], int(sys.argv[2])
+host = '0.0.0.0'
+port = sys.argv[1]
 lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # Avoid bind() exception: OSError: [Errno 48] Address already in use
 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-lsock.bind((host, port))
+lsock.bind((host, int(port)))
 lsock.listen()
 with open("server_log.txt", "a") as f:
     print("listening on", (host, port), file=f)
