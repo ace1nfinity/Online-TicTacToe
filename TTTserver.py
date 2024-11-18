@@ -7,7 +7,7 @@ import struct
 
 class Message:
 
-    def __init__(self, selector, sock, addr, ID):
+    def __init__(self, selector, sock, addr, ID, gameManager):
         self.selector = selector
         self.sock = sock
         self.addr = addr
@@ -19,6 +19,7 @@ class Message:
         self.ID = ID
         self.action = None
         self.last_data = None
+        self.gameManager = gameManager
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -127,7 +128,7 @@ class Message:
         with open("server_log.txt", "a") as f:
                 print(f"sending: Action '{server_action}', Message '{message}' to ", self.addr, file=f)
 
-        content = dict(action=server_action, message=message)
+        content = dict(action=server_action, message=message, board=self.gameManager.board)
         content_encoding = "utf-8"
         response = {
             "content_bytes": self._json_encode(content, content_encoding),
@@ -225,6 +226,7 @@ class Message:
             self.request = self._json_decode(data, encoding)
             with open("server_log.txt", "a") as f:
                 print("received request", repr(self.request), "from", self.addr, file=f)
+            self.last_data = self.request.get("move")
         # Set selector to listen for write events, we're done reading.
         self._set_selector_events_mask("w")
 

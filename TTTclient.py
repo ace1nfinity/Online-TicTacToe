@@ -19,6 +19,7 @@ class Message:
         self.jsonheader = None
         self.response = None
         self.action = None
+        self.board = None
 
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
@@ -84,6 +85,7 @@ class Message:
 
     def _process_response_json_content(self):
         self.action = self.response.get("action")
+        self.board = self.response.get("board")
         content = self.response.get("message")
         result = content
         print(f"{result}")
@@ -204,7 +206,7 @@ class Message:
         if self.jsonheader["content-type"] == "text/json":
             encoding = self.jsonheader["content-encoding"]
             self.response = self._json_decode(data, encoding)
-            print("received response", repr(self.response), "from", self.addr)
+            #print("received response", repr(self.response), "from", self.addr)
             self._process_response_json_content()
         # Close when response has been processed
         #self.close()
