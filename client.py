@@ -33,8 +33,6 @@ def process_connection(key, mask):
 
     action = message.action
 
-    #print("State: ", action)
-
     if(action == "Your_Turn"):
          print(updated_board(message.board))
          move = input("Enter Move:\n")
@@ -74,17 +72,8 @@ start_connection(host, port, request)
 while True:
     events = sel.select(timeout=1)
     for key, mask in events:
+        try:
             process_connection(key, mask)
-            #except Exception:
-                #print(
-                   # "main: error: exception for",
-                    #f"{message.addr}:\n{traceback.format_exc()}",
-                #)
-                #message.close()
-        # Check for a socket being monitored to continue.
-        #if not sel.get_map():
-            #break
-#except KeyboardInterrupt:
-    #print("caught keyboard interrupt, exiting")
-#finally:
-    #sel.close()
+        except Exception:
+            print("Error, disconnecting.")
+            exit()
