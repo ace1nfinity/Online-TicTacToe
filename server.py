@@ -69,17 +69,20 @@ def service_connection(key, mask):
         #Attempt to place received move, if a bad move let current player re-attempt move
         if(gameManager.PlaceMove(message.last_data, message.ID) == False and currentPlayerTurn == message.ID):
             ServerLog(f"Error in received move. Allowing Player {message.ID} to retry.")
+            #Allow Player 1 to reattempt
             if(currentPlayerTurn == 1 and message.ID == 1):
                 clients[0].Message.write("Move", f"Invalid Move, try Again. Enter a move in this format: <row><column> Ex: A1 | You are 'o'")
-            #If player 2 made a move
+            #Allow Player 2 to reattempt
             elif((currentPlayerTurn == 2 and message.ID == 2)):
                 clients[1].Message.write("Move", f"Invalid Move, try Again. Enter a move in this format: <row><column> Ex: A1 | You are 'x'")
         else:
             #Check for Win before allowing another move to be made
             if(gameManager.CheckForWin()):
                 EndGame(message.ID)
+            #If 9 moves have been made, board is full, it is a draw
             elif(numOfTurns >= 9):
                 EndGame(4)
+
             #If player 1 made a move
             if(currentPlayerTurn == 1 and message.ID == 1):
                 numOfTurns += 1
@@ -92,15 +95,16 @@ def service_connection(key, mask):
                 currentPlayerTurn = 1
                 clients[0].Message.write("Move", f"{clients[0].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'")
                 ServerLog(f"Player {message.ID} has made move, changing to other Player.")
-            print(numOfTurns)
             
-
+    #Code for when Players are selecting names.
     elif(message.action=="Name"):
+        #Put names in client data structs
         if(message.ID == 1 and namesCollected == False):
             clients[0] = clients[0]._replace(Name = message.last_data)
         elif(message.ID == 2 and namesCollected == False):
             clients[1] = clients[1]._replace(Name = message.last_data)
 
+        #If both names given, start game with Player 1's turn.
         if (clients[0].Name != "_name_" and clients[1].Name != "_name_" and namesCollected == False):
             namesCollected = True
             currentPlayerTurn = 1
@@ -111,23 +115,25 @@ def service_connection(key, mask):
     return
 
 def EndGame(endCode):
-
-
     output = "End of Game, Goodbye."
 
+    #Player disconnect
     if(endCode == 0):
         output = f"Other Player disconnected, ending game."
+    #Player 1 won
     elif(endCode == 1 and currentPlayerTurn == 1):
         output = f"{clients[0].Name} won!. Come play again! Goodbye."
         ServerLog(f"Player {clients[0].ID} won, ending game.")
+    #Player 2 won
     elif(endCode == 2 and currentPlayerTurn == 2):
         output = f"{clients[1].Name} won!. Come play again! Goodbye."
         ServerLog(f"Player {clients[1].ID} won, ending game.")
+    #Draw
     elif(endCode == 4):
         output = f"It's a draw! End of Game, Goodbye."
         ServerLog(f"It was a draw, ending game.")
 
-
+    #Disconnect clients
     try:
         clients[0].Message.write("End", output)
         clients[0].Message.close()
@@ -179,15 +185,3 @@ while True:
             except Exception:
                 ServerLog(f"Client pre-maturely disconnected, ending game. {Exception}")
                 EndGame(0)
-                #try:
-                    #message.process_events(mask)
-                #except Exception:
-                    #print(
-                        #"main: error: exception for",
-                        #f"{message.addr}:\n{traceback.format_exc()}",
-                    #)
-                    #message.close()
-#except KeyboardInterrupt:
-    #print("caught keyboard interrupt, exiting")
-#finally:
-    #sel.close()

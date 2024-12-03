@@ -1,53 +1,39 @@
 listening on: 0.0.0.0, 4000
-Accepted connection from ('127.0.0.1', 60403).
-received request {'action': 'Connect', 'move': ''} from ('127.0.0.1', 60403)
-sending: Action 'Waiting', Message 'Welcome! Waiting for second Player to Connect...' to  ('127.0.0.1', 60403)
-Accepted connection from ('127.0.0.1', 60404).
-received request {'action': 'Connect', 'move': ''} from ('127.0.0.1', 60404)
-sending: Action 'Name', Message 'Welcome to Tic-Tac-Toe!' to  ('127.0.0.1', 60403)
-sending: Action 'Name', Message 'Welcome to Tic-Tac-Toe!' to  ('127.0.0.1', 60404)
-received request {'action': 'Name', 'move': 'Lucy'} from ('127.0.0.1', 60403)
-sending: Action 'Waiting', Message 'Waiting for other Player...' to  ('127.0.0.1', 60403)
-received request {'action': 'Name', 'move': 'Alice'} from ('127.0.0.1', 60404)
-sending: Action 'Waiting', Message 'Waiting for other Player...' to  ('127.0.0.1', 60404)
+Accepted connection from ('127.0.0.1', 60597).
+received request {'action': 'Connect', 'move': ''} from ('127.0.0.1', 60597)
+sending: Action 'Waiting', Message 'Welcome! Waiting for second Player to Connect...' to  ('127.0.0.1', 60597)
+Accepted connection from ('127.0.0.1', 60598).
+received request {'action': 'Connect', 'move': ''} from ('127.0.0.1', 60598)
+sending: Action 'Name', Message 'Welcome to Tic-Tac-Toe!' to  ('127.0.0.1', 60597)
+sending: Action 'Name', Message 'Welcome to Tic-Tac-Toe!' to  ('127.0.0.1', 60598)
+received request {'action': 'Name', 'move': 'Lucy'} from ('127.0.0.1', 60597)
+sending: Action 'Waiting', Message 'Waiting for other Player...' to  ('127.0.0.1', 60597)
+received request {'action': 'Name', 'move': 'Alice'} from ('127.0.0.1', 60598)
+sending: Action 'Waiting', Message 'Waiting for other Player...' to  ('127.0.0.1', 60598)
 All Players connected, beginning game.
-sending: Action 'Your_Turn', Message 'Lucy, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'' to  ('127.0.0.1', 60403)
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60404)
-received request {'action': 'Move', 'move': 'A1'} from ('127.0.0.1', 60403)
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60403)
-sending: Action 'Your_Turn', Message 'Alice, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'' to  ('127.0.0.1', 60404)
+sending: Action 'Your_Turn', Message 'Lucy, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'' to  ('127.0.0.1', 60597)
+sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60598)
+received request {'action': 'Move', 'move': 'A1'} from ('127.0.0.1', 60597)
+sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60597)
+sending: Action 'Your_Turn', Message 'Alice, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'' to  ('127.0.0.1', 60598)
 Player 1 has made move, changing to other Player.
-received request {'action': 'Move', 'move': 'B2'} from ('127.0.0.1', 60404)
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60404)
-sending: Action 'Your_Turn', Message 'Lucy, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'' to  ('127.0.0.1', 60403)
+received request {'action': 'Move', 'move': 'C3'} from ('127.0.0.1', 60598)
+sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60598)
+sending: Action 'Your_Turn', Message 'Lucy, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'' to  ('127.0.0.1', 60597)
 Player 2 has made move, changing to other Player.
-received request {'action': 'Move', 'move': 'C3'} from ('127.0.0.1', 60403)
-sending: Action 'Your_Turn', Message 'Alice, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'' to  ('127.0.0.1', 60404)
+received request {'action': 'Move', 'move': 'B2'} from ('127.0.0.1', 60597)
+sending: Action 'Your_Turn', Message 'Alice, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'' to  ('127.0.0.1', 60598)
 Player 1 has made move, changing to other Player.
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60403)
-received request {'action': 'Move', 'move': 'C2'} from ('127.0.0.1', 60404)
-sending: Action 'Your_Turn', Message 'Lucy, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'' to  ('127.0.0.1', 60403)
+sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60597)
+received request {'action': 'Move', 'move': 'B3'} from ('127.0.0.1', 60598)
+sending: Action 'Your_Turn', Message 'Lucy, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'' to  ('127.0.0.1', 60597)
 Player 2 has made move, changing to other Player.
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60404)
-received request {'action': 'Move', 'move': 'A2'} from ('127.0.0.1', 60403)
-sending: Action 'Your_Turn', Message 'Alice, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'' to  ('127.0.0.1', 60404)
+sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60598)
+received request {'action': 'Move', 'move': 'C1'} from ('127.0.0.1', 60597)
+sending: Action 'Your_Turn', Message 'Alice, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'' to  ('127.0.0.1', 60598)
 Player 1 has made move, changing to other Player.
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60403)
-received request {'action': 'Move', 'move': 'A3'} from ('127.0.0.1', 60404)
-sending: Action 'Your_Turn', Message 'Lucy, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'' to  ('127.0.0.1', 60403)
-Player 2 has made move, changing to other Player.
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60404)
-received request {'action': 'Move', 'move': 'C1'} from ('127.0.0.1', 60403)
-sending: Action 'Your_Turn', Message 'Alice, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'' to  ('127.0.0.1', 60404)
-Player 1 has made move, changing to other Player.
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60403)
-received request {'action': 'Move', 'move': 'B1'} from ('127.0.0.1', 60404)
-sending: Action 'Your_Turn', Message 'Lucy, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'' to  ('127.0.0.1', 60403)
-Player 2 has made move, changing to other Player.
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60404)
-received request {'action': 'Move', 'move': 'B3'} from ('127.0.0.1', 60403)
-sending: Action 'Your_Turn', Message 'Alice, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'' to  ('127.0.0.1', 60404)
-Player 1 has made move, changing to other Player.
-sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60403)
-closing connection to ('127.0.0.1', 60403)
-closing connection to ('127.0.0.1', 60404)
+sending: Action 'Waiting', Message 'Other Player's Turn. Waiting...' to  ('127.0.0.1', 60597)
+received request {'action': 'Move', 'move': 'A3'} from ('127.0.0.1', 60598)
+Player 2 won, ending game.
+closing connection to ('127.0.0.1', 60597)
+closing connection to ('127.0.0.1', 60598)

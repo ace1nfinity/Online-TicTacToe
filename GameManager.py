@@ -23,12 +23,16 @@ class GameManager :
         elif(ID == 2):
             boardPlacer = 'x'
 
+        #Check for valid column
         if(self.DetermineColumn(move) < 0):
             return False
 
+        #Check for valid row, then attempt to place move
         if('A' in move):
+            #If spot has already been played on, return false
             if(self.board[0+(self.DetermineColumn(move))] != ' '):
                 return False
+            #Else, allow the move to be placed on board at that spot
             self.board[0+(self.DetermineColumn(move))] = boardPlacer
 
         elif('B' in move):
