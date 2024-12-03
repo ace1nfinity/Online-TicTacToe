@@ -87,6 +87,7 @@ class Message:
         return message
 
     def _create_response(self, server_action, message = ""):
+
         self.action = self.request.get("action")
         self.last_data = self.request.get("move")
         if self.action == "Connect":

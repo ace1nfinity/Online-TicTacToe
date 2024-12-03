@@ -74,7 +74,11 @@ start_connection(host, port, request)
 while True:
     events = sel.select(timeout=1)
     for key, mask in events:
+        try:
             process_connection(key, mask)
+        except Exception:
+            print("Error, disconnecting.")
+            exit()
             #except Exception:
                 #print(
                    # "main: error: exception for",

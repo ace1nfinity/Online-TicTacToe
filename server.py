@@ -27,9 +27,11 @@ currentPlayerTurn = 0
 numOfTurns = 0
 
 def accept_wrapper(sock):
+    if(len(clients) >= 2):
+        return
+    
     conn, addr = sock.accept()  # Should be ready to read
-    with open("server_log.txt", "a") as f:
-        print("accepted connection from", addr, file=f)
+    ServerLog(f"Accepted connection from {addr}.")
     conn.setblocking(False)
 
     message = TTTserver.Message(sel, conn, addr, (len(clients)+1), gameManager)
@@ -66,21 +68,31 @@ def service_connection(key, mask):
         global gameManager
         #Attempt to place received move, if a bad move let current player re-attempt move
         if(gameManager.PlaceMove(message.last_data, message.ID) == False and currentPlayerTurn == message.ID):
-            with open("server_log.txt", "a") as f:
-                print("Error in received move", file=f)
-            exit()
+            ServerLog(f"Error in received move. Allowing Player {message.ID} to retry.")
+            if(currentPlayerTurn == 1 and message.ID == 1):
+                clients[0].Message.write("Move", f"Invalid Move, try Again. Enter a move in this format: <row><column> Ex: A1 | You are 'o'")
+            #If player 2 made a move
+            elif((currentPlayerTurn == 2 and message.ID == 2)):
+                clients[1].Message.write("Move", f"Invalid Move, try Again. Enter a move in this format: <row><column> Ex: A1 | You are 'x'")
         else:
             #Check for Win before allowing another move to be made
             if(gameManager.CheckForWin()):
-                EndGame(message)
+                EndGame(message.ID)
+            elif(numOfTurns >= 9):
+                EndGame(4)
             #If player 1 made a move
             if(currentPlayerTurn == 1 and message.ID == 1):
+                numOfTurns += 1
                 currentPlayerTurn = 2
-                clients[1].Message.write("Move", f"{clients[1].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1")
+                clients[1].Message.write("Move", f"{clients[1].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'x'")
+                ServerLog(f"Player {message.ID} has made move, changing to other Player.")
             #If player 2 made a move
             elif((currentPlayerTurn == 2 and message.ID == 2)):
+                numOfTurns += 1
                 currentPlayerTurn = 1
-                clients[0].Message.write("Move", f"{clients[0].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1")
+                clients[0].Message.write("Move", f"{clients[0].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'")
+                ServerLog(f"Player {message.ID} has made move, changing to other Player.")
+            print(numOfTurns)
             
 
     elif(message.action=="Name"):
@@ -92,26 +104,50 @@ def service_connection(key, mask):
         if (clients[0].Name != "_name_" and clients[1].Name != "_name_" and namesCollected == False):
             namesCollected = True
             currentPlayerTurn = 1
-            clients[0].Message.write("Move", (f"{clients[0].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1"))
+            ServerLog(f"All Players connected, beginning game.")
+            clients[0].Message.write("Move", (f"{clients[0].Name}, It is your Turn. Enter a move in this format: <row><column> Ex: A1 | You are 'o'"))
             clients[1].Message.write("Move", "")
 
     return
 
-def EndGame(winningPlayer):
+def EndGame(endCode):
+
+
     output = "End of Game, Goodbye."
 
-    if(winningPlayer.ID == 1 and currentPlayerTurn == 1):
+    if(endCode == 0):
+        output = f"Other Player disconnected, ending game."
+    elif(endCode == 1 and currentPlayerTurn == 1):
         output = f"{clients[0].Name} won!. Come play again! Goodbye."
-    else:
+        ServerLog(f"Player {clients[0].ID} won, ending game.")
+    elif(endCode == 2 and currentPlayerTurn == 2):
         output = f"{clients[1].Name} won!. Come play again! Goodbye."
+        ServerLog(f"Player {clients[1].ID} won, ending game.")
+    elif(endCode == 4):
+        output = f"It's a draw! End of Game, Goodbye."
+        ServerLog(f"It was a draw, ending game.")
 
-    for c in clients:
-        c.Message.write("End", output)
-        c.Message.close()
-        #sel.unregister(c.Message.sock)
+
+    try:
+        clients[0].Message.write("End", output)
+        clients[0].Message.close()
+    except Exception:
+        ServerLog(f"Disconnecting other client.")
+
+    try:
+        clients[1].Message.write("End", output)
+        clients[1].Message.close()
+    except Exception:
+        ServerLog(f"Disconnecting other client.")
+
     sel.close()
     exit()
     return
+
+def ServerLog(message):
+    print(message)
+    with open("server_log.txt", "a") as f:
+                print(message, file=f)
 
 
 if len(sys.argv) != 2:
@@ -128,8 +164,7 @@ lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 lsock.bind((host, int(port)))
 lsock.listen()
-with open("server_log.txt", "a") as f:
-    print("listening on", (host, port), file=f)
+ServerLog(f"listening on: {host}, {port}")
 lsock.setblocking(False)
 sel.register(lsock, selectors.EVENT_READ, data=None)
 
@@ -139,7 +174,11 @@ while True:
         if key.data is None:
             accept_wrapper(key.fileobj)
         else:
-            service_connection(key, mask)
+            try:
+                service_connection(key, mask)
+            except Exception:
+                ServerLog(f"Client pre-maturely disconnected, ending game. {Exception}")
+                EndGame(0)
                 #try:
                     #message.process_events(mask)
                 #except Exception:

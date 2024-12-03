@@ -7,7 +7,7 @@ This is a simple online game implementing the rules of Tic Tac Toe.
 * `server_log.txt` Server logging from the last run of the game.
 * `client.py` Runs the front end of the client, outputting the current game board and managing player input.
 * `TTTclient.py` Back end of the client. Manages processing of messages for both receiving and sending.
-* `GameManager.py` Script that managed the Tic-Tac-Toe game. Will communicate with server.py yo send updates information for the clients to render.
+* `GameManager.py` Script that managed the Tic-Tac-Toe game. Will communicate with server.py to send updated information for the clients to render.
 * `python.txt` Contains one-line which has the python version used to create this game.
 * `requirements.txt` Contains a list of needed packages to run the game.
 * `SOW.md` Statement of Work.
@@ -29,7 +29,6 @@ This is a simple online game implementing the rules of Tic Tac Toe.
 * `Connect`
 * `Name` `User given name`
 * `Quit`
-* `Spectate`
 * `Move` `Where on board to play move`
 * Server to Client:
 * `Name` `Server Message`
@@ -44,6 +43,10 @@ This is a simple online game implementing the rules of Tic Tac Toe.
 * October 20th: Implemented partial message protocol
 * October 28th-29th: Created Sprint 3 branch. Implemented Game State and Synchronized it across clients. Also implemented user-name capabilities, allowing players to choose a user-name at the start of the game.
 * November 12th: Created Sprint 4 branch. Added actual Tic-Tac-Toe implementation. Players can now make actual moves and see those moves reflected on the game board. Added win conditions, so the game now properly ends when win condtion is met. Still need to add: letting players remake moves if they enter a bad move, print board after player makes their move. Not only show updated board when opponent make moves. Add spectator implementation. Add server console logging, not just .txt file logging.
+* December 3rd: Made it so the game can have a draw ending. Made it so players can re-enter a move if they enter an invalid move option. Added server console logging. Scaled back the project just slightly by removing the spectate functionality from the project. Added error handling so that if a client disconnects, it cleanly ends the game. Made it so only two clients can connect to the server at a time, preventing more from connecting.
+
+**Security Flaws:**
+* There is no authentication required for this game, so it is possible that a third party could play moves for one of the players, making it unfair. A way to address this would be to add authentication and encryption, making it so no one outside the server and two clients could understand the current state of the game and whos turn it is. This would make it substantially harder for a third party to play moves in place of one of the other players.
 
 **Additional resources:**
 * [Link to Python documentation]
